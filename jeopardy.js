@@ -10,20 +10,21 @@ function getRandom(min, max) {
 }
 
 // Get categories IDs from JService API
+/* get category IDs by iterating 
+  through each catefory push each
+  id into the categoryIds array */
+// use lodash to grab 6 random categories
 async function getCategoryIds() {
   const response = await axios.get(`${API_URL}categories?count=100`, {
     params: {
       offset: getRandom(0, 18500),
     },
   });
-  /* get category IDs by iterating 
-  through each catefory push each
-  id into the categoryIds array */
   let categoryIds = [];
   for (let data of response.data) {
     categoryIds.push(data.id);
   }
-  // use lodash to grab 6 random categories
+
   return _.sampleSize(categoryIds, NUM_CATEGORIES);
 }
 
@@ -44,7 +45,7 @@ async function getCategory(catId) {
       },
     ];
   });
-  // return titles and clues array
+
   return {
     title: eachCat.data.title,
     clues_array: clue,
@@ -56,6 +57,12 @@ async function getCategory(catId) {
 // Loop through number of categories
 // Create header cell with category title
 // Append header cell to row
+// Loop through number of questions per category
+// Create a row for cells
+// Loop through number of categories
+// Create a body cell with image
+// add id according to index
+// Append cells to row
 async function fillTable() {
   $("thead").empty();
   let $cell = $("<tr>");
@@ -67,12 +74,6 @@ async function fillTable() {
   }
   $("thead").append($cell);
 
-  // Loop through number of questions per category
-  // Create a row for cells
-  // Loop through number of categories
-  // Create a body cell with image
-  // add id according to index
-  // Append cells to row
   $("tbody").empty();
   for (let i = 0; i < QUESTIONS_PER_CAT; i++) {
     let $row = $("<tr>");
@@ -88,18 +89,19 @@ async function fillTable() {
   }
 }
 
+// split each id number in to variables
+// return categories by j idx and clues arr by i idx
+// if its not null from clue arr
+// when click show clue question
+// reassign value of showing to "question"
+//if question is showing click = clue answer
+// return nothing to disbable click
+// add fade animation on each click
 function handleClick(evt) {
-  // split each id number in to variables
-  // return categories by j idx and clues arr by i idx
   const target = evt.currentTarget;
   const [j, i] = target.id.split("-");
   const clue = categories[j].clues_array[i][0];
 
-  // if its not null from clue arr
-  // when click show clue question
-  // reassign value of showing to "question"
-  //if question is showing click = clue answer
-  // return nothing to disbable click
   if (!clue.showing) {
     target.innerHTML = clue.question;
     clue.showing = "question";
@@ -110,7 +112,6 @@ function handleClick(evt) {
     return;
   }
 
-  // add fade animation on each click
   $(this).fadeOut(1);
   $(this).fadeIn(600);
 }
@@ -132,12 +133,12 @@ function hideLoadingView() {
 }
 // set up and start the game by fetching the category IDs, getting the categories,
 // filling the table with the categories, and hiding the loading view
+// Loop through each category ID and fetch the category data
+// push category data to empty array
 async function setupAndStart() {
   let categoryIds = await getCategoryIds();
 
   categories = [];
-  // Loop through each category ID and fetch the category data
-  // push category data to empty array
   for (let catId of categoryIds) {
     categories.push(await getCategory(catId));
   }
@@ -162,5 +163,5 @@ and hiding the loading view.
 $(async function () {
   showLoadingView();
   setupAndStart();
-  $("#jeopardy").on("click", ".clues", handleClick);
+  $("#jeopardy").on("click", "td", handleClick);
 });
